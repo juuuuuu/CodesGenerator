@@ -1,6 +1,18 @@
 {
+    "name": "juuuuuu/codes-generator",
+    "description": "A simple Symfony Console component codes generator based on Mersenne Twister",
     "require": {
         "ruafozy/mersenne-twister": "^1.3",
         "symfony/console": "^3.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Julien Manganne",
+            "email": "jmanganne@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "": "src/" }
     }
 }

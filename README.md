@@ -7,5 +7,5 @@ Usage
 =====
 
 ```bash
-    php generate.php
+    php app.php
 ```

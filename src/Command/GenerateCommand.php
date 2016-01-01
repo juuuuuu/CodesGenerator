@@ -5,7 +5,6 @@ namespace Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use mersenne_twister\twister;
 
@@ -14,13 +13,8 @@ class GenerateCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('generate:mt')
+            ->setName('generate:number')
             ->setDescription('Generate Mersenne Twister pseudo-random codes.')
-            ->addArgument(
-                'seed',
-                InputArgument::REQUIRED,
-                'Which seed number would you like to start with?'
-            )
             ->addArgument(
                 'number',
                 InputArgument::OPTIONAL,
@@ -33,6 +27,45 @@ class GenerateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $number = $input->getArgument('number');
-        $seed = $input->getArgument('seed');
+
+        try {
+            $memcache = new \Memcache();
+            $memcache->connect('localhost', 11211);
+
+            $length = 7;
+            $possibleChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            $possibleCharsLength = strlen($possibleChars);
+            $previous = 0;
+            $generator = 13 ** 11;
+            $modulus = 7 ** 19;
+
+            for ($i = 0; $i < $number; ++$i) {
+                $previous = ($previous + $generator) % $modulus;
+                $code = '';
+                $temp = $previous;
+
+                for ($j = 0; $j < $length; ++$j) {
+                    $code .= $possibleChars[$temp % $possibleCharsLength];
+                    $temp = $temp / $possibleCharsLength;
+                }
+
+                if (!$memcache->get($code)) {
+                    $memcache->set($code, $code, 0, 0);
+
+                    // @TODO: save the generated code somewhere (not a Database!)
+                    $output->writeln($code);
+                }
+
+            }
+
+            $memcache->flush();
+            $memcache->close();
+
+        } catch (\Exception $e) {
+            $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
+
+            return;
+        }
+
     }
 }

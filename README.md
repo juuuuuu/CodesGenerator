@@ -7,5 +7,5 @@ Usage
 =====
 
 ```bash
-    php app.php
+    php app.php generate:number <number>
 ```

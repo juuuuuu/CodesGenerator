@@ -14,7 +14,7 @@ class GenerateCommand extends Command
     {
         $this
             ->setName('generate:number')
-            ->setDescription('Generate Mersenne Twister pseudo-random codes.')
+            ->setDescription('Generate pseudo-random codes.')
             ->addArgument(
                 'number',
                 InputArgument::OPTIONAL,
@@ -33,7 +33,7 @@ class GenerateCommand extends Command
             $memcache->connect('localhost', 11211);
 
             $length = 7;
-            $possibleChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            $possibleChars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
             $possibleCharsLength = strlen($possibleChars);
             $previous = 0;
             $generator = 13 ** 11;

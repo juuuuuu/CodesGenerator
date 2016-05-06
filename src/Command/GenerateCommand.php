@@ -29,8 +29,8 @@ class GenerateCommand extends Command
         $number = $input->getArgument('number');
 
         try {
-            $memcache = new \Memcache();
-            $memcache->connect('localhost', 11211);
+            $memcache = new \Memcached();
+            $memcache->addServer('localhost', 11211);
 
             $length = 7;
             $possibleChars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
@@ -50,7 +50,7 @@ class GenerateCommand extends Command
                 }
 
                 if (!$memcache->get($code)) {
-                    $memcache->set($code, $code, 0, 0);
+                    $memcache->set($code, $code);
 
                     // @TODO: save the generated code somewhere (not a Database!)
                     $output->writeln($code);
@@ -59,7 +59,7 @@ class GenerateCommand extends Command
             }
 
             $memcache->flush();
-            $memcache->close();
+            $memcache->quit();
 
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));

@@ -26,8 +26,8 @@ class GenerateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $memcache = new \Memcached();
-            $memcache->addServer('localhost', 11211);
+            $memcached = new \Memcached();
+            $memcached->addServer('localhost', 11211);
 
             $seed = $input->getArgument('seed');
             $generator = new XorShift($seed);
@@ -60,8 +60,8 @@ class GenerateCommand extends Command
 
                 $output->writeln($randomValue." ".$code);
 
-                // if (!$memcache->get($code)) {
-                //     $memcache->set($code, $code);
+                // if (!$memcached->get($code)) {
+                //     $memcached->set($code, $code);
 
                 //     // @TODO: save the generated code somewhere (not a Database!)
                 //     $output->writeln($code);
@@ -69,8 +69,8 @@ class GenerateCommand extends Command
 
             }
 
-            $memcache->flush();
-            $memcache->quit();
+            $memcached->flush();
+            $memcached->quit();
 
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));

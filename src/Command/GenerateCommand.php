@@ -27,15 +27,18 @@ class GenerateCommand extends Command
     {
         try {
             $memcached = new \Memcached();
-            $memcached->addServer('localhost', 11211);
+            $memcached->addServer('127.0.0.1', 11211);
 
             $seed = $input->getArgument('seed');
             $generator = new XorShift($seed);
 
             $codeLength = 5;
             $possibleChars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
+            $possibleCharsLength = strlen($possibleChars);
 
-            for ($i = 0; $i < 10; ++$i) {
+            $count = 0;
+
+            while ($count < 6) {
                 $randomValue = $generator->random();
 
                 while (strlen($randomValue) < ($codeLength * 2)) {
@@ -43,13 +46,12 @@ class GenerateCommand extends Command
                 }
 
                 $split = str_split($randomValue);
-
                 $map = [
-                    ($split[0].$split[1]) % 34,
-                    ($split[2].$split[3]) % 34,
-                    ($split[4].$split[5]) % 34,
-                    ($split[6].$split[7]) % 34,
-                    ($split[8].$split[9]) % 34,
+                    ($split[0].$split[1]) % $possibleCharsLength,
+                    ($split[2].$split[3]) % $possibleCharsLength,
+                    ($split[4].$split[5]) % $possibleCharsLength,
+                    ($split[6].$split[7]) % $possibleCharsLength,
+                    ($split[8].$split[9]) % $possibleCharsLength,
                 ];
 
                 $code = $possibleChars[$map[0]].
@@ -60,13 +62,13 @@ class GenerateCommand extends Command
 
                 $output->writeln($randomValue." ".$code);
 
-                // if (!$memcached->get($code)) {
-                //     $memcached->set($code, $code);
+                if ($memcached->set('KEY_'.$code, $code)) {
+                    $count++;
 
-                //     // @TODO: save the generated code somewhere (not a Database!)
-                //     $output->writeln($code);
-                // }
+                    // @TODO: Write code on file
 
+                    $output->writeln($code);
+                }
             }
 
             $memcached->flush();

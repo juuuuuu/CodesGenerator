@@ -26,6 +26,8 @@ class GenerateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
+            $timeStart = microtime(true);
+
             $memcached = new \Memcached();
             $memcached->addServer('127.0.0.1', 11211);
 
@@ -37,8 +39,11 @@ class GenerateCommand extends Command
             $possibleCharsLength = strlen($possibleChars);
 
             $count = 0;
+            $handle = fopen(__DIR__.'/../../data/codes.csv', 'w');
 
-            while ($count < 6) {
+            $output->writeln("Starting code generation.");
+
+            while ($count < 600000) {
                 $randomValue = $generator->random();
 
                 while (strlen($randomValue) < ($codeLength * 2)) {
@@ -60,19 +65,25 @@ class GenerateCommand extends Command
                         $possibleChars[$map[3]].
                         $possibleChars[$map[4]];
 
-                $output->writeln($randomValue." ".$code);
-
                 if ($memcached->set('KEY_'.$code, $code)) {
-                    $count++;
-
-                    // @TODO: Write code on file
-
-                    $output->writeln($code);
+                    if (fwrite($handle, $code."\r\n")) {;
+                        $count++;
+                    } else {
+                        throw new \Exception("An error occured while write a code ($code) to file.", 1);
+                    }
                 }
             }
 
+            fclose($handle);
+
             $memcached->flush();
             $memcached->quit();
+
+            $output->writeln("Done!");
+
+            $timeEnd = microtime(true);
+            $time = round($timeEnd - $timeStart, 1);
+            $output->writeln("It took $time seconds to write $count generated codes to file.");
 
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));

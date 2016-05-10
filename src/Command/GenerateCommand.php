@@ -30,7 +30,7 @@ class GenerateCommand extends Command
             ->addArgument(
                 'number',
                 InputArgument::REQUIRED,
-                'How many code would you like to generate?'
+                'How many codes would you like to generate?'
             )
             ->addArgument(
                 'seed',
@@ -42,11 +42,10 @@ class GenerateCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $codes = array();
         try {
             $timeStart = microtime(true);
 
-            $output->writeln("Starting code generation...");
+            $output->writeln("Starting codes generation...");
 
             $seed = $input->getArgument('seed');
             $generator = new XorShift($seed);
@@ -55,6 +54,7 @@ class GenerateCommand extends Command
 
             $handle = fopen(__DIR__.'/../../data/codes.csv', 'w');
 
+            $codes = [];
             $count = 0;
 
             while ($count < $number) {
@@ -83,9 +83,9 @@ class GenerateCommand extends Command
                         $this->possibleChars[$map[3]].
                         $this->possibleChars[$map[4]];
 
-
                 $codes[$code] = 0;
-                if (count($codes) == $count+1) {
+
+                if (count($codes) == $count + 1) {
                     $count++;
                     fwrite($handle, $code."\r\n");
                 }

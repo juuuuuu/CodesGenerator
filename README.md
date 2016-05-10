@@ -7,7 +7,7 @@ A simple Symfony Console component codes generator based on Xorshift.
 You just need to specify a _seed_ to instantiate the generator.
 
 ```bash
-php app.php generate:number <seed>
+php app.php generate:codes <number> <seed>
 ```
 
 ## Resource

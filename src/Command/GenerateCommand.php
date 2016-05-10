@@ -25,7 +25,7 @@ class GenerateCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('generate:code')
+            ->setName('generate:codes')
             ->setDescription('Generate pseudo-random codes.')
             ->addArgument(
                 'number',

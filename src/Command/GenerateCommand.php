@@ -42,6 +42,7 @@ class GenerateCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $codes = array();
         try {
             $timeStart = microtime(true);
 
@@ -51,9 +52,6 @@ class GenerateCommand extends Command
             $generator = new XorShift($seed);
 
             $number = $input->getArgument('number');
-
-            $memcached = new \Memcached();
-            $memcached->addServer('127.0.0.1', 11211);
 
             $handle = fopen(__DIR__.'/../../data/codes.csv', 'w');
 
@@ -85,19 +83,15 @@ class GenerateCommand extends Command
                         $this->possibleChars[$map[3]].
                         $this->possibleChars[$map[4]];
 
-                if ($memcached->add('KEY_'.$code, $code)) {
-                    if (fwrite($handle, $code."\r\n")) {;
-                        $count++;
-                    } else {
-                        throw new \Exception("An error occured while write a code ($code) to file.", 1);
-                    }
+
+                $codes[$code] = 0;
+                if (count($codes) == $count+1) {
+                    $count++;
+                    fwrite($handle, $code."\r\n");
                 }
             }
 
             fclose($handle);
-
-            $memcached->flush();
-            $memcached->quit();
 
             $output->writeln("Done!");
 

@@ -97,7 +97,7 @@ class GenerateCommand extends Command
 
             $timeEnd = microtime(true);
             $time = round($timeEnd - $timeStart, 1);
-            $output->writeln("It took $time seconds to write $count generated codes to file.");
+            $output->writeln('It took '.number_format($time, 0, ',', ' ').' seconds to write '.number_format($count, 0, ',', ' ').' generated codes to file.');
 
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));

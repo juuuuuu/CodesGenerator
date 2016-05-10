@@ -7,17 +7,34 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Generator\XorShift;
+use Validator\SequenceOfNumbers;
 
 class GenerateCommand extends Command
 {
+    private $codeLength, $possibleChars, $possibleCharsLength;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->codeLength = 5;
+        $this->possibleChars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
+        $this->possibleCharsLength = strlen($this->possibleChars);
+    }
+
     protected function configure()
     {
         $this
-            ->setName('generate:number')
+            ->setName('generate:code')
             ->setDescription('Generate pseudo-random codes.')
             ->addArgument(
+                'number',
+                InputArgument::REQUIRED,
+                'How many code would you like to generate?'
+            )
+            ->addArgument(
                 'seed',
-                InputArgument::OPTIONAL,
+                InputArgument::REQUIRED,
                 'Which seed would you like to use?'
             )
         ;
@@ -28,42 +45,45 @@ class GenerateCommand extends Command
         try {
             $timeStart = microtime(true);
 
-            $memcached = new \Memcached();
-            $memcached->addServer('127.0.0.1', 11211);
+            $output->writeln("Starting code generation...");
 
             $seed = $input->getArgument('seed');
             $generator = new XorShift($seed);
 
-            $codeLength = 5;
-            $possibleChars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
-            $possibleCharsLength = strlen($possibleChars);
+            $number = $input->getArgument('number');
 
-            $count = 0;
+            $memcached = new \Memcached();
+            $memcached->addServer('127.0.0.1', 11211);
+
             $handle = fopen(__DIR__.'/../../data/codes.csv', 'w');
 
-            $output->writeln("Starting code generation.");
+            $count = 0;
 
-            while ($count < 600000) {
+            while ($count < $number) {
                 $randomValue = $generator->random();
 
-                while (strlen($randomValue) < ($codeLength * 2)) {
+                while (strlen($randomValue) < ($this->codeLength * 2)) {
                     $randomValue = $randomValue.mt_rand(0, 9);
                 }
 
                 $split = str_split($randomValue);
                 $map = [
-                    ($split[0].$split[1]) % $possibleCharsLength,
-                    ($split[2].$split[3]) % $possibleCharsLength,
-                    ($split[4].$split[5]) % $possibleCharsLength,
-                    ($split[6].$split[7]) % $possibleCharsLength,
-                    ($split[8].$split[9]) % $possibleCharsLength,
+                    ($split[0].$split[1]) % $this->possibleCharsLength,
+                    ($split[2].$split[3]) % $this->possibleCharsLength,
+                    ($split[4].$split[5]) % $this->possibleCharsLength,
+                    ($split[6].$split[7]) % $this->possibleCharsLength,
+                    ($split[8].$split[9]) % $this->possibleCharsLength,
                 ];
 
-                $code = $possibleChars[$map[0]].
-                        $possibleChars[$map[1]].
-                        $possibleChars[$map[2]].
-                        $possibleChars[$map[3]].
-                        $possibleChars[$map[4]];
+                $code = $this->possibleChars[$map[0]].
+                        $this->possibleChars[$map[1]].
+                        $this->possibleChars[$map[2]].
+                        $this->possibleChars[$map[3]].
+                        $this->possibleChars[$map[4]];
+
+                if (!SequenceOfNumbers::isValid($code)) {
+                    continue;
+                }
 
                 if ($memcached->set('KEY_'.$code, $code)) {
                     if (fwrite($handle, $code."\r\n")) {;
@@ -90,18 +110,5 @@ class GenerateCommand extends Command
 
             return;
         }
-    }
-
-    private function randXorshift($number, $x, $y, $z)
-    {
-        $t = ( $x ^ ($x << 11) ) & 0x7fffffff;
-
-        $x = $y;
-        $y = $z;
-        $z = $number;
-
-        $number = ( $number ^ ($number >> 19) ^ ( $t ^ ( $t >> 8 )) );
-
-        return $number;
     }
 }

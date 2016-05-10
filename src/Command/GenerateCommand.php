@@ -75,17 +75,17 @@ class GenerateCommand extends Command
                     ($split[8].$split[9]) % $this->possibleCharsLength,
                 ];
 
+                if (!SequenceOfNumbers::isValid($map)) {
+                    continue;
+                }
+
                 $code = $this->possibleChars[$map[0]].
                         $this->possibleChars[$map[1]].
                         $this->possibleChars[$map[2]].
                         $this->possibleChars[$map[3]].
                         $this->possibleChars[$map[4]];
 
-                if (!SequenceOfNumbers::isValid($code)) {
-                    continue;
-                }
-
-                if ($memcached->set('KEY_'.$code, $code)) {
+                if ($memcached->add('KEY_'.$code, $code)) {
                     if (fwrite($handle, $code."\r\n")) {;
                         $count++;
                     } else {

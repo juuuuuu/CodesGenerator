@@ -25,7 +25,7 @@ class XorShift {
         $this->y = $this->z;
         $this->z = $this->w;
 
-        $this->w = ($this->w ^ ($this->w >> 19) ^ ($t ^ ($t >> 8 )) );
+        $this->w = ($this->w ^ ($this->w >> 19) ^ ($t ^ ($t >> 8)));
 
         return $this->w;
     }

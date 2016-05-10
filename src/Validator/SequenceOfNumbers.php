@@ -4,12 +4,23 @@ namespace Validator;
 
 class SequenceOfNumbers
 {
-    static function isValid($value)
+    static function isValid(array $value)
     {
-        $value = '1234B';
+        if ($value[0] === ($value[1] - 1) &&
+            $value[1] === ($value[2] - 1)) {
+            return false;
+        }
 
-        die(dump($value));
+        if ($value[1] === ($value[2] - 1) &&
+            $value[2] === ($value[3] - 1)) {
+            return false;
+        }
 
-        return false;
+        if ($value[2] === ($value[3] - 1) &&
+            $value[3] === ($value[4] - 1)) {
+            return false;
+        }
+
+        return true;
     }
 }

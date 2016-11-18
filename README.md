@@ -12,5 +12,4 @@ php app.php generate:codes <number> <seed>
 
 ## Resource
 
-[Memcached](https://memcached.org/) is needed.  
 Based on [StickyBeat's XorShift](https://github.com/StickyBeat/pseudo-random-generator-xor-shift) pseudo-random generator.  

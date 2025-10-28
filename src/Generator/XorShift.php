@@ -3,7 +3,10 @@
 namespace Generator;
 
 class XorShift {
-    private $x, $y, $z, $w;
+    private int $w;
+    private int $x;
+    private int $y;
+    private int $z;
 
     public function __construct($seed = false) {
         $this->x = 123456789;
@@ -18,7 +21,8 @@ class XorShift {
         }
     }
 
-    public function random() {
+    public function random(): int
+    {
         $t = ($this->x ^ ($this->x << 11)) & 0x7fffffff;
 
         $this->x = $this->y;

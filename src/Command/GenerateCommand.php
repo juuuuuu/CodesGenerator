@@ -2,6 +2,8 @@
 
 namespace Command;
 
+use Symfony\Component\Console\Attribute\Argument;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -9,83 +11,60 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Generator\XorShift;
 use Validator\SequenceOfNumbers;
 
+#[AsCommand(
+    name: 'generate:codes',
+    description: 'Generate pseudo-random codes.'
+)]
 class GenerateCommand extends Command
 {
-    private $codeLength, $possibleChars, $possibleCharsLength;
+    public function __invoke(
+        #[Argument(description: 'How many codes would you like to generate?')] int $number,
+        #[Argument(description: 'Which seed would you like to use?')] int $seed,
+        InputInterface $input, OutputInterface $output,
+    ): int {
+        $codeLength = 5;
+        $possibleChars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
+        $possibleCharsLength = strlen($possibleChars);
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->codeLength = 5;
-        $this->possibleChars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
-        $this->possibleCharsLength = strlen($this->possibleChars);
-    }
-
-    protected function configure()
-    {
-        $this
-            ->setName('generate:codes')
-            ->setDescription('Generate pseudo-random codes.')
-            ->addArgument(
-                'number',
-                InputArgument::REQUIRED,
-                'How many codes would you like to generate?'
-            )
-            ->addArgument(
-                'seed',
-                InputArgument::REQUIRED,
-                'Which seed would you like to use?'
-            )
-        ;
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
         try {
-            $timeStart = microtime(true);
-
             $output->writeln("Starting codes generation...");
 
-            $seed = $input->getArgument('seed');
-            $generator = new XorShift($seed);
+            $timeStart = microtime(true);
+            $handle = fopen(__DIR__.'/../../data/codes.csv', 'wb');
 
-            $number = $input->getArgument('number');
-
-            $handle = fopen(__DIR__.'/../../data/codes.csv', 'w');
-
-            $codes = [];
             $count = 0;
+            $codes = [];
+            $generator = new XorShift($seed);
 
             while ($count < $number) {
                 $randomValue = $generator->random();
 
-                while (strlen($randomValue) < ($this->codeLength * 2)) {
-                    $randomValue = $randomValue.mt_rand(0, 9);
+                while (strlen($randomValue) < ($codeLength * 2)) {
+                    $randomValue .= random_int(0, 9);
                 }
 
                 $split = str_split($randomValue);
                 $map = [
-                    ($split[0].$split[1]) % $this->possibleCharsLength,
-                    ($split[2].$split[3]) % $this->possibleCharsLength,
-                    ($split[4].$split[5]) % $this->possibleCharsLength,
-                    ($split[6].$split[7]) % $this->possibleCharsLength,
-                    ($split[8].$split[9]) % $this->possibleCharsLength,
+                    ($split[0].$split[1]) % $possibleCharsLength,
+                    ($split[2].$split[3]) % $possibleCharsLength,
+                    ($split[4].$split[5]) % $possibleCharsLength,
+                    ($split[6].$split[7]) % $possibleCharsLength,
+                    ($split[8].$split[9]) % $possibleCharsLength,
                 ];
 
                 if (!SequenceOfNumbers::isValid($map)) {
                     continue;
                 }
 
-                $code = $this->possibleChars[$map[0]].
-                        $this->possibleChars[$map[1]].
-                        $this->possibleChars[$map[2]].
-                        $this->possibleChars[$map[3]].
-                        $this->possibleChars[$map[4]];
+                $code = $possibleChars[$map[0]].
+                        $possibleChars[$map[1]].
+                        $possibleChars[$map[2]].
+                        $possibleChars[$map[3]].
+                        $possibleChars[$map[4]];
 
                 $codes[$code] = 0;
 
-                if (count($codes) == $count + 1) {
+                if (count($codes) === $count + 1) {
                     $count++;
                     fwrite($handle, $code."\r\n");
                 }
@@ -102,7 +81,9 @@ class GenerateCommand extends Command
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
 
-            return;
+            return Command::FAILURE;
         }
+
+        return Command::SUCCESS;
     }
 }

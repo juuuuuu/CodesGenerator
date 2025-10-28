@@ -1,17 +1,23 @@
 {
-    "name": "juuuuuu/codes-generator",
-    "description": "A simple Symfony Console component codes generator",
-    "require": {
-        "symfony/console": "^4.0"
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Julien Manganne",
-            "email": "jmanganne@gmail.com"
-        }
-    ],
-    "autoload": {
-        "psr-4": { "": "src/" }
+  "name": "juuuuuu/codes-generator",
+  "description": "A simple Symfony Console component codes generator",
+  "require": {
+    "php": "8.3.*",
+    "symfony/console": "^7.3"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Julien Manganne",
+      "email": "jmanganne@gmail.com"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "": "src/"
+    }
+  }
 }
